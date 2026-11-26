@@ -1,3 +1,4 @@
+import {transcript} from './transcript.mjs';
 import {HOUR, OFFSET, mm, groups, stages, days, names, groupOf, directionStages, readTithi, completedYears, yugRules} from './engine.mjs';
 const byId = id => document.getElementById(id);
 const when = byId('when');
@@ -88,12 +89,26 @@ byId('yug-table').innerHTML = table(['ယုဂ်','နေ့နှင့် �
 }).filter(Boolean).join(' · '),pageLink(y.page)]));
 for(let i=19;i<=53;i++) page.add(new Option(mm(i),i));
 byId('chapters').innerHTML = [[19,'တိထိအုပ်စု'],[27,'အဝတ္ထာန်'],[39,'တိထိနှင့် ယုဂ်'],[45,'တိထိလုံးရေ'],[51,'အနုစိတ်တွက်နည်း']].map(([n,label])=>pageLink(n,label)).join('');
+const sourceNames = ['အမာဝသီ','ပထမ','ဒုတိယ','တတိယ','စတုတ္ထ','ပဉ္စမ','ဆဋ္ဌမ','သတ္တမ','အဋ္ဌမ','နဝမ','ဒသမီ','ဧကာဒသီ','ဒွါဒသီ','တိယောဒသီ','စတုဒ္ဒသီ','ပုဏ္ဏမီ'];
+
 function showPage(number) {
   page.value=number;
-  const path='./pages/'+number+'.jpg';
-  byId('scan').src=path;
-  byId('scan').alt='ကျမ်းစာမျက်နှာ '+mm(number);
-  byId('scan-link').href=path;
+  const entry = transcript[number];
+  const article = byId('transcript');
+  const heading = document.createElement('h3');
+  heading.textContent = entry.heading || 'စာမျက်နှာ ' + mm(number);
+  const prose = document.createElement('div');
+  prose.className = 'transcript-text';
+  prose.textContent = entry.text;
+  article.replaceChildren(heading, prose);
+  if (number === 26) {
+    const sourceTable = document.createElement('div');
+    sourceTable.innerHTML = table(['လုံးရေ','Tithi','တိထိအမည်','တိထိအုပ်စု','အရပ်မျက်နှာ'], names.map((name, i) => {
+      const group = groups[groupOf(i)];
+      return [mm(i), name, sourceNames[i], group.name, groupOf(i) === 4 ? 'ထောင့်၊ အထက်၊ အောက်အရပ်' : group.direction];
+    }));
+    article.append(sourceTable);
+  }
   byId('prev').disabled=number===19;
   byId('next').disabled=number===53;
 }

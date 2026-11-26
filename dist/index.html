@@ -15,7 +15,7 @@
 <div><p class="kicker">သရောဒယ ကျမ်းကိုး</p><h1>တိထိစက်</h1><p>လဆန်း၊ လဆုတ် တိထိ၊ အရပ်နှင့် ယုဂ်များကို အချိန်အလိုက် ကြည့်ရှုပါ။</p></div>
 <div class="orbit" aria-hidden="true"><i></i><span>◐</span></div>
 </section>
-<nav aria-label="ကဏ္ဍများ" class="nav"><a href="#calculator">တိထိတွက်ရန်</a><a href="#tables">ကျမ်းကိုးဇယား</a><a href="#reader">မူရင်းစာမျက်နှာ</a></nav>
+<nav aria-label="ကဏ္ဍများ" class="nav"><a href="#calculator">တိထိတွက်ရန်</a><a href="#tables">ကျမ်းကိုးဇယား</a><a href="#reader">ကျမ်းစာသား</a></nav>
 <section id="calculator" class="calculator">
 <div class="settings">
 <form id="form" class="panel">
@@ -36,10 +36,11 @@
 <details><summary>တိထိနှင့် ယုဂ် စည်းမျဉ်းများ</summary><div id="yug-table"></div></details>
 </section>
 <section id="reader" class="panel">
-<h2>မူရင်းစာမျက်နှာများ</h2>
+<h2>ကျမ်းစာသား</h2>
+<p class="transcript-note">စာမျက်နှာ ၁၉ မှ ၅၃ အထိ ပုံမှ စာသားဖတ်ယူထားသော မူကြမ်းဖြစ်၍ စာလုံးနှင့် စာကြောင်းအချို့ လွဲနိုင်ပါသည်။</p>
 <div class="chapters" id="chapters"></div>
 <div class="reader-controls"><button id="prev" type="button">ရှေ့စာမျက်နှာ</button><label>စာမျက်နှာ<select id="page"></select></label><button id="next" type="button">နောက်စာမျက်နှာ</button></div>
-<a id="scan-link" target="_blank" rel="noopener" aria-label="မူရင်းပုံ အရွယ်အစားအပြည့်ဖွင့်ရန်"><img id="scan" alt="" loading="lazy"></a>
+<article id="transcript" aria-live="polite"></article>
 </section>
 </main>
 <script type="module" src="./app.mjs"></script>
