@@ -6,7 +6,6 @@ export const litFraction = angle => (1 - Math.cos(angle * RADIANS)) / 2;
 
 let texture;
 let texturePromise;
-let lastAngle;
 
 function loadTexture() {
   texturePromise ??= new Promise(resolve => {
@@ -21,6 +20,7 @@ function loadTexture() {
       resolve();
     };
     image.onerror = resolve;
+    // Lunar surface texture from NASA SVS CGI Moon Kit: https://svs.gsfc.nasa.gov/4720/
     image.src = new URL('./moon-surface.jpg', import.meta.url).href;
   });
   return texturePromise;
@@ -50,9 +50,7 @@ function makeSurface() {
   return surface;
 }
 
-export async function showMoon(canvas, angle) {
-  const preceding = lastAngle ?? angle;
-  lastAngle = angle;
+export async function showMoon(canvas, angle, preceding = angle) {
   await loadTexture();
   if (!canvas.isConnected) return;
   const context = canvas.getContext('2d');

@@ -1,5 +1,7 @@
 import {MoonPhase, SearchMoonPhase} from './vendor/astronomy-engine.mjs';
 
+export const MINUTE = 60000;
+export const TWELVE_MIN = 12 * MINUTE;
 export const HOUR = 3600000;
 export const OFFSET = 6.5 * HOUR;
 export const mm = value => String(value).replace(/[0-9]/g, digit => '၀၁၂၃၄၅၆၇၈၉'[digit]);
@@ -51,13 +53,116 @@ export function readTithi(ms) {
   const end = phaseBoundary((index + 1) % 30, ms, true);
   const group = groupOf(number);
   const weekday = new Date(ms + OFFSET).getUTCDay();
-  const hour = Math.max(0,Math.floor((ms-start)/HOUR));
-  return {number, group, weekday, start, end, angle, hour, waxing:index<15,
-    hourlyGroup:(group+hour)%5,
-    yugs:yugRules.filter(rule => rule.groups?.[weekday].includes(group) || rule.numbers?.[weekday] === number)};
+  const hour = Math.max(0, Math.floor((ms - start) / HOUR));
+  const twelveMin = Math.max(0, Math.floor((ms - start) / TWELVE_MIN));
+  const hourlyFull = start + (hour + 1) * HOUR <= end;
+  const twelveMinFull = start + (twelveMin + 1) * TWELVE_MIN <= end;
+  return {
+    number, group, weekday, start, end, angle,
+    hour, hourlyGroup: (group + hour) % 5, hourlyFull,
+    twelveMin, twelveMinGroup: (group + twelveMin) % 5, twelveMinFull,
+    waxing: index < 15,
+    yugs: yugRules.filter(rule => rule.groups?.[weekday].includes(group) || rule.numbers?.[weekday] === number)
+  };
 }
+
 export function completedYears(birth, target) {
   const a = new Date(birth + OFFSET).toISOString();
   const b = new Date(target + OFFSET).toISOString();
-  return Number(b.slice(0,4))-Number(a.slice(0,4))-(b.slice(5,19)<a.slice(5,19)?1:0);
+  return Number(b.slice(0,4)) - Number(a.slice(0,4)) - (b.slice(5,19) < a.slice(5,19) ? 1 : 0);
+}
+
+export function addYears(ms, years) {
+  const d = new Date(ms + OFFSET);
+  const y = d.getUTCFullYear() + years;
+  const m = d.getUTCMonth();
+  const day = d.getUTCDate();
+  const lastDay = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  return Date.UTC(y, m, Math.min(day, lastDay), d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()) - OFFSET;
+}
+
+export function buildHourlySchedule(t, currentMs) {
+  const rows = [];
+  let cursor = t.start;
+  let i = 0;
+  while (cursor + HOUR <= t.end) {
+    const start = cursor;
+    const end = cursor + HOUR;
+    const groupIndex = (t.group + i) % 5;
+    rows.push({
+      index: i + 1,
+      start,
+      end,
+      groupIndex,
+      group: groups[groupIndex],
+      directions: directionStages(groupIndex),
+      active: currentMs >= start && currentMs < end
+    });
+    cursor = end;
+    i++;
+  }
+  const remainder = cursor < t.end ? {
+    start: cursor,
+    end: t.end,
+    minutes: Math.floor((t.end - cursor) / MINUTE),
+    seconds: Math.round(((t.end - cursor) % MINUTE) / 1000),
+    active: currentMs >= cursor && currentMs < t.end
+  } : null;
+  return {rows, remainder};
+}
+
+export function buildTwelveMinSchedule(t, currentMs) {
+  const rows = [];
+  let cursor = t.start;
+  let i = 0;
+  while (cursor + TWELVE_MIN <= t.end) {
+    const start = cursor;
+    const end = cursor + TWELVE_MIN;
+    const groupIndex = (t.group + i) % 5;
+    rows.push({
+      index: i + 1,
+      hourIndex: Math.floor(i / 5),
+      start,
+      end,
+      groupIndex,
+      group: groups[groupIndex],
+      directions: directionStages(groupIndex),
+      active: currentMs >= start && currentMs < end
+    });
+    cursor = end;
+    i++;
+  }
+  const remainder = cursor < t.end ? {
+    start: cursor,
+    end: t.end,
+    minutes: Math.floor((t.end - cursor) / MINUTE),
+    seconds: Math.round(((t.end - cursor) % MINUTE) / 1000),
+    active: currentMs >= cursor && currentMs < t.end
+  } : null;
+  return {rows, remainder};
+}
+
+export function buildTwelveYearSchedule(bornMs, targetMs, periods = 10) {
+  const natal = readTithi(bornMs);
+  const age = Math.max(0, completedYears(bornMs, targetMs));
+  const activeIndex = Math.floor(age / 12);
+  const total = Math.max(periods, activeIndex + 2);
+  const rows = [];
+  for (let k = 0; k < total; k++) {
+    const startAge = k * 12;
+    const endAge = (k + 1) * 12;
+    const groupIndex = (natal.group + k) % 5;
+    rows.push({
+      index: k + 1,
+      startAge,
+      endAge,
+      startDate: addYears(bornMs, startAge),
+      endDate: addYears(bornMs, endAge),
+      groupIndex,
+      group: groups[groupIndex],
+      directions: directionStages(groupIndex),
+      active: k === activeIndex
+    });
+  }
+  return {natal, age, activeIndex, rows};
 }
