@@ -19,3 +19,5 @@ summary{color:var(--blue);font-weight:800}.notes p{margin-top:8px}#tables,#reade
 .lunar-result{display:grid;grid-template-columns:clamp(70px,15vw,118px) minmax(0,1fr);align-items:center;gap:clamp(10px,2vw,19px)}
 .lunar-result canvas{width:100%;height:auto;display:block;border-radius:50%;filter:drop-shadow(0 4px 8px #12334832)}
 .moon-light{color:var(--muted);font-size:.875rem;margin:-3px 0 7px}
+.book-picker{max-width:370px;margin-bottom:10px}
+#transcript .transcript-text:empty{display:none}

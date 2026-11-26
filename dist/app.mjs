@@ -1,3 +1,4 @@
+import {notesPages, notesContents} from './notes.mjs';
 import {litFraction, showMoon} from './moon.mjs';
 import {transcript} from './transcript.mjs';
 import {HOUR, OFFSET, mm, groups, stages, days, names, groupOf, directionStages, readTithi, completedYears, yugRules} from './engine.mjs';
@@ -10,7 +11,7 @@ const fmt = ms => mm(new Date(ms+OFFSET).toISOString().slice(0,19).replace('T','
 const inputDate = ms => new Date(ms+OFFSET).toISOString().slice(0,19);
 const instant = value => Date.parse(value+'+06:30');
 const table = (headers, rows) => '<div class="table-wrap"><table><thead><tr>'+headers.map(h=>'<th scope="col">'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
-const pageLink = (number, label=mm(number)) => '<a href="#reader" data-page="'+number+'">'+label+'</a>';
+const pageLink = (number, label=mm(number), book='lessons') => '<a href="#reader" data-book="'+book+'" data-page="'+number+'">'+label+'</a>';
 const tithiName = t => (t.number===0 ? 'လကွယ်' : t.number===15 ? 'လပြည့်' : (t.waxing?'လဆန်း ':'လဆုတ် ')+mm(t.number))+' · '+names[t.number];
 
 const numberNotes = [
@@ -95,13 +96,44 @@ byId('yug-table').innerHTML = table(['ယုဂ်','နေ့နှင့် �
   const match=y.groups?.[i].map(index=>groups[index].name).join('၊ ') ?? (y.numbers[i]===null?'':mm(y.numbers[i]));
   return match?day+' '+match:'';
 }).filter(Boolean).join(' · '),pageLink(y.page)]));
-for(let i=19;i<=53;i++) page.add(new Option(mm(i),i));
-byId('chapters').innerHTML = [[19,'တိထိအုပ်စု'],[27,'အဝတ္ထာန်'],[39,'တိထိနှင့် ယုဂ်'],[45,'တိထိလုံးရေ'],[51,'အနုစိတ်တွက်နည်း']].map(([n,label])=>pageLink(n,label)).join('');
+const book = byId('book');
+const readerSources = {
+  lessons: {
+    pages: transcript,
+    first: 19,
+    last: 53,
+    note: 'စာမျက်နှာ ၁၉ မှ ၅၃ အထိ ပုံမှ စာသားဖတ်ယူထားသော မူကြမ်းဖြစ်၍ စာလုံးနှင့် စာကြောင်းအချို့ လွဲနိုင်ပါသည်။',
+    links: [[19,'တိထိအုပ်စု'],[27,'အဝတ္ထာန်'],[39,'တိထိနှင့် ယုဂ်'],[45,'တိထိလုံးရေ'],[51,'အနုစိတ်တွက်နည်း']]
+  },
+  notes: {
+    pages: notesPages,
+    first: 0,
+    last: 48,
+    note: 'မင်းနိုင်၏ တိထီစက်မှတ်စု။ PDF မှ စာသားဖတ်ယူထားသောကြောင့် စာလုံးနှင့် စာကြောင်းအချို့ လွဲနိုင်ပါသည်။',
+    links: [[0,'မျက်နှာဖုံး'],[1,'မာတိကာ'],[10,'မွမ်းမံအဆင့်'],[14,'တိထီနှင့် ဘုန်းတန်ခိုး'],[32,'တွက်နည်းနမူနာ'],[37,'ခယတိထီ'],[44,'ကလိယုဂ်']]
+  }
+};
+let currentBook;
+
+function selectBook(key, number=readerSources[key].first) {
+  const source = readerSources[key];
+  if (currentBook !== key) {
+    currentBook = key;
+    book.value = key;
+    const options = Object.keys(source.pages).map(Number).map(n=>new Option(n===0?'မျက်နှာဖုံး':mm(n),n));
+    page.replaceChildren(...options);
+    byId('reader-note').textContent = source.note;
+    byId('chapters').innerHTML = source.links.map(([n,label])=>pageLink(n,label,key)).join('');
+  }
+  showPage(number);
+}
+
 const sourceNames = ['အမာဝသီ','ပထမ','ဒုတိယ','တတိယ','စတုတ္ထ','ပဉ္စမ','ဆဋ္ဌမ','သတ္တမ','အဋ္ဌမ','နဝမ','ဒသမီ','ဧကာဒသီ','ဒွါဒသီ','တိယောဒသီ','စတုဒ္ဒသီ','ပုဏ္ဏမီ'];
 
 function showPage(number) {
   page.value=number;
-  const entry = transcript[number];
+  const source = readerSources[currentBook];
+  const entry = source.pages[number];
   const article = byId('transcript');
   const heading = document.createElement('h3');
   heading.textContent = entry.heading || 'စာမျက်နှာ ' + mm(number);
@@ -109,7 +141,13 @@ function showPage(number) {
   prose.className = 'transcript-text';
   prose.textContent = entry.text;
   article.replaceChildren(heading, prose);
-  if (number === 26) {
+  if (currentBook === 'notes' && (number === 1 || number === 2)) {
+    const contents = document.createElement('div');
+    const rows = notesContents[number].map(([title, target])=>[pageLink(target,title,'notes'),mm(target)]);
+    contents.innerHTML = table(['အကြောင်းအရာ','စာမျက်နှာ'], rows);
+    article.append(contents);
+  }
+  if (currentBook === 'lessons' && number === 26) {
     const sourceTable = document.createElement('div');
     sourceTable.innerHTML = table(['လုံးရေ','Tithi','တိထိအမည်','တိထိအုပ်စု','အရပ်မျက်နှာ'], names.map((name, i) => {
       const group = groups[groupOf(i)];
@@ -117,17 +155,19 @@ function showPage(number) {
     }));
     article.append(sourceTable);
   }
-  byId('prev').disabled=number===19;
-  byId('next').disabled=number===53;
+  byId('prev').disabled = number === source.first;
+  byId('next').disabled = number === source.last;
 }
+book.addEventListener('change',()=>selectBook(book.value));
 page.addEventListener('change',()=>showPage(Number(page.value)));
 byId('prev').addEventListener('click',()=>showPage(Number(page.value)-1));
 byId('next').addEventListener('click',()=>showPage(Number(page.value)+1));
 document.addEventListener('click',event=>{
   const link=event.target.closest('[data-page]');
-  if(link) showPage(Number(link.dataset.page));
+  if(link) selectBook(link.dataset.book,Number(link.dataset.page));
 });
 when.value=inputDate(Date.now());
-showPage(19);
+const linkedBook = new URLSearchParams(location.search).get('book');
+selectBook(linkedBook === 'notes' ? 'notes' : 'lessons');
 updateMethod();
 calculate();

@@ -37,7 +37,9 @@
 </section>
 <section id="reader" class="panel">
 <h2>ကျမ်းစာသား</h2>
-<p class="transcript-note">စာမျက်နှာ ၁၉ မှ ၅၃ အထိ ပုံမှ စာသားဖတ်ယူထားသော မူကြမ်းဖြစ်၍ စာလုံးနှင့် စာကြောင်းအချို့ လွဲနိုင်ပါသည်။</p>
+<label class="book-picker">ဖတ်လိုသည့် စာစု
+<select id="book"><option value="lessons">သရောဒယ သင်ခန်းစာများ</option><option value="notes">တိထီစက်မှတ်စု · မင်းနိုင်</option></select></label>
+<p class="transcript-note" id="reader-note"></p>
 <div class="chapters" id="chapters"></div>
 <div class="reader-controls"><button id="prev" type="button">ရှေ့စာမျက်နှာ</button><label>စာမျက်နှာ<select id="page"></select></label><button id="next" type="button">နောက်စာမျက်နှာ</button></div>
 <article id="transcript" aria-live="polite"></article>
