@@ -1,7 +1,7 @@
 import {litFraction, showMoon} from './moon.mjs';
 import {inputKey, savedInput, validateInput} from './calculation-input.mjs';
 import {
-  HOUR, TWELVE_MIN, OFFSET, mm, groups, days, names, directionStages,
+  HOUR, TWELVE_MIN, OFFSET, mm, groups, days, names, directionStages, tithiLabel,
   readTithi, completedYears, buildHourlySchedule, buildTwelveMinSchedule, buildTwelveYearSchedule
 } from './engine.mjs';
 import {table} from './table.mjs';
@@ -19,7 +19,9 @@ const fmtRange = (start, end) => {
   }
   return `${mm(sDate.slice(5))} ${fmtTime(start)} – ${mm(eDate.slice(5))} ${fmtTime(end)}`;
 };
-const tithiName = t => (t.number === 0 ? 'လကွယ်' : t.number === 15 ? 'လပြည့်' : (t.waxing ? 'လဆန်း ' : 'လဆုတ် ') + mm(t.number)) + ' · ' + names[t.number];
+const tithiName = t => `${tithiLabel(t.index)} · ${names[t.number]}`;
+const colorPill = g => `<span class="tithi-pill tithi-${g.key}"><span class="swatch" aria-hidden="true"></span>${g.name} · ${g.color}</span>`;
+const tithiCell = r => `<div class="tithi-cell"><strong>${r.tithiText}</strong>${colorPill(r.group)}</div>`;
 
 function scheduleTable(headers, rows) {
   const head = headers.map(h => `<th scope="col">${h}</th>`).join('');
@@ -49,13 +51,13 @@ function renderHourlyTab(schedule) {
     cells: [
       `${mm(r.index)}${r.active ? ' <span class="badge">လက်ရှိ</span>' : ''}`,
       fmtRange(r.start, r.end),
-      `<strong>${r.group.name}</strong>`,
+      tithiCell(r),
       ...r.directions.map(d => d.group.direction)
     ]
   }));
   return `
     <p class="basis">တိထိ စတင်ချိန်မှစ၍ ၁ နာရီပြည့် အပိုင်းပေါင်း ${mm(schedule.rows.length)} ပိုင်း (တစ်ပိုင်းလျှင် ၁ နာရီစီ အစဉ်လိုက် လှည့်တွက်ထားသည်)</p>
-    ${scheduleTable(['အပိုင်း', 'အချိန်ကာလ', 'တိထိအုပ်စု', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတာ'], rows)}
+    ${scheduleTable(['အပိုင်း', 'အချိန်ကာလ', 'တိထိ နှင့် အရောင်', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတာ'], rows)}
     ${renderRemainderNote(schedule.remainder, '၁ နာရီ')}`;
 }
 
@@ -69,7 +71,7 @@ function renderTwelveMinTab(schedule, showAll, currentHourIndex) {
     cells: [
       `${mm(r.index)}${r.active ? ' <span class="badge">လက်ရှိ</span>' : ''}`,
       fmtRange(r.start, r.end),
-      `<strong>${r.group.name}</strong>`,
+      tithiCell(r),
       ...r.directions.map(d => d.group.direction)
     ]
   }));
@@ -81,11 +83,11 @@ function renderTwelveMinTab(schedule, showAll, currentHourIndex) {
         <button type="button" data-min-scope="all" class="${showAll ? 'is-on' : ''}">တိထိတစ်ခုလုံး (${mm(schedule.rows.length)} ပိုင်း)</button>
       </div>
     </div>
-    ${scheduleTable(['အပိုင်း', 'အချိန်ကာလ', 'တိထိအုပ်စု', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတာ'], rows)}
+    ${scheduleTable(['အပိုင်း', 'အချိန်ကာလ', 'တိထိ နှင့် အရောင်', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတာ'], rows)}
     ${renderRemainderNote(schedule.remainder, '၁၂ မိနစ်')}`;
 }
 
-function renderTwelveYearTab(born, ms, input) {
+function renderTwelveYearTab(born, ms) {
   if (!Number.isFinite(born)) {
     return `
       <div class="birth-prompt">
@@ -103,13 +105,13 @@ function renderTwelveYearTab(born, ms, input) {
     cells: [
       `${mm(r.startAge)} – ${mm(r.endAge)} နှစ်${r.active ? ' <span class="badge">လက်ရှိ</span>' : ''}`,
       `${fmtDate(r.startDate)} – ${fmtDate(r.endDate)}`,
-      `<strong>${r.group.name}</strong>`,
+      tithiCell(r),
       ...r.directions.map(d => d.group.direction)
     ]
   }));
   return `
-    <p class="basis">ဇာတိတိထိ · ${tithiName(schedule.natal)} (${groups[schedule.natal.group].name}) · မွေးချိန် ${fmt(born)} · လက်ရှိအသက် ${mm(schedule.age)} နှစ်</p>
-    ${scheduleTable(['သက်တမ်း', 'ရက်စွဲကာလ', 'တိထိအုပ်စု', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတာ'], rows)}`;
+    <p class="basis">ဇာတိတိထိ · ${tithiName(schedule.natal)} (${groups[schedule.natal.group].name} · ${groups[schedule.natal.group].color}) · မွေးချိန် ${fmt(born)} · လက်ရှိအသက် ${mm(schedule.age)} နှစ်</p>
+    ${scheduleTable(['သက်တမ်း', 'ရက်စွဲကာလ', 'တိထိ နှင့် အရောင်', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတာ'], rows)}`;
 }
 
 function calculate() {
@@ -124,14 +126,14 @@ function calculate() {
     const t = readTithi(ms);
     const actual = groups[t.group];
     let base = t.group;
-    let caption = 'ရောက်ဆဲ တိထိ · ' + actual.name;
+    let caption = 'ရောက်ဆဲ တိထိ · ' + tithiLabel(t.index) + ' (' + actual.name + ' · ' + actual.color + ')';
     let unusedNotice = '';
 
     if (method === 'hourly') {
       base = t.hourlyGroup;
       const slotStart = t.start + t.hour * HOUR;
       const slotEnd = Math.min(t.end, t.start + (t.hour + 1) * HOUR);
-      caption = 'တိထီ ၁ နာရီပိုင်း · ' + fmt(slotStart) + ' မှ ' + fmt(slotEnd) + ' အထိ';
+      caption = 'တိထီ ၁ နာရီပိုင်း · ' + tithiLabel(t.index + t.hour) + ' · ' + fmt(slotStart) + ' မှ ' + fmt(slotEnd) + ' အထိ';
       if (!t.hourlyFull) {
         unusedNotice = 'ဤအချိန်သည် တိထိအဆုံးပိုင်း ၁ နာရီ မပြည့်သော ကျန်ရှိချိန်ဖြစ်သဖြင့် ၁ နာရီပိုင်းစနစ်တွင် မသုံးပါ။';
       }
@@ -139,18 +141,19 @@ function calculate() {
       base = t.twelveMinGroup;
       const slotStart = t.start + t.twelveMin * TWELVE_MIN;
       const slotEnd = Math.min(t.end, t.start + (t.twelveMin + 1) * TWELVE_MIN);
-      caption = 'တိထီ ၁၂ မိနစ်ပိုင်း · ' + fmt(slotStart) + ' မှ ' + fmt(slotEnd) + ' အထိ';
+      caption = 'တိထီ ၁၂ မိနစ်ပိုင်း · ' + tithiLabel(t.index + t.twelveMin) + ' · ' + fmt(slotStart) + ' မှ ' + fmt(slotEnd) + ' အထိ';
       if (!t.twelveMinFull) {
         unusedNotice = 'ဤအချိန်သည် တိထိအဆုံးပိုင်း ၁၂ မိနစ် မပြည့်သော ကျန်ရှိချိန်ဖြစ်သဖြင့် ၁၂ မိနစ်ပိုင်းစနစ်တွင် မသုံးပါ။';
       }
     } else if (method === 'birth' || method === 'age') {
       const natal = readTithi(born);
       base = natal.group;
-      caption = 'ဇာတိတိထိ · ' + tithiName(natal) + ' · ' + groups[base].name;
+      caption = 'ဇာတိတိထိ · ' + tithiName(natal) + ' · ' + groups[base].name + ' (' + groups[base].color + ')';
       if (method === 'age') {
         const age = completedYears(born, ms);
-        base = (base + Math.floor(age / 12)) % 5;
-        caption += ' · အသက် ' + mm(age) + ' နှစ် · လက်ရှိ ၁၂ နှစ်ပိုင်း ' + groups[base].name;
+        const period = Math.floor(age / 12);
+        base = (base + period) % 5;
+        caption += ' · အသက် ' + mm(age) + ' နှစ် · လက်ရှိ ၁၂ နှစ်ပိုင်း ' + tithiLabel(natal.index + period) + ' (' + groups[base].name + ')';
       }
     }
 
@@ -169,13 +172,13 @@ function calculate() {
           <p class="kicker">${days[t.weekday]} · ${fmt(ms)}</p>
           <h2>${tithiName(t)}</h2>
           <p class="moon-light">လမျက်နှာပြင် အလင်းရောင် ${mm((litFraction(t.angle) * 100).toFixed(1))}%</p>
-          <div class="tags"><span>${actual.name} တိထိ</span><span>${actual.color}</span><span>${actual.side} ခြေ</span></div>
+          <div class="tags">${colorPill(actual)}<span>${actual.side} ခြေ</span></div>
         </div>
       </div>
       <dl class="times"><div><dt>တိထိ စတင်ချိန်</dt><dd>${fmt(t.start)}</dd></div><div><dt>တိထိ ပြီးဆုံးချိန်</dt><dd>${fmt(t.end)}</dd></div></dl>
       <h3>အဝတ္ထာန် အရပ်များ</h3><p class="basis">${caption}</p>
       ${unusedNotice ? `<p class="remainder-note is-active">${unusedNotice}</p>` : ''}
-      ${table(['အဝတ္ထာန်', 'အရပ်'], directions.map(r => [r.stage, r.group.direction]))}
+      ${table(['အဝတ္ထာန်', 'တိထိအုပ်စု / အရောင်', 'အရပ်'], directions.map(r => [r.stage, colorPill(r.group), r.group.direction]))}
       <div class="mini"><h3>တိုက်ဆိုင်သော ယုဂ်</h3><p>${t.yugs.map(y => y.name).join(' · ') || 'မရှိပါ။'}</p></div>
       <section class="schedules" aria-label="အသင့်တွက်ပြီးသား တိထီပိုင်းဇယားများ">
         <h3>အသင့်တွက်ပြီးသား တိထီပိုင်းဇယားများ</h3>
@@ -206,7 +209,7 @@ function calculate() {
           });
         });
       } else {
-        panel.innerHTML = renderTwelveYearTab(born, ms, input);
+        panel.innerHTML = renderTwelveYearTab(born, ms);
         const inlineForm = byId('inline-birth-form');
         if (inlineForm) {
           inlineForm.addEventListener('submit', event => {

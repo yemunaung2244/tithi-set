@@ -6,11 +6,11 @@ export const HOUR = 3600000;
 export const OFFSET = 6.5 * HOUR;
 export const mm = value => String(value).replace(/[0-9]/g, digit => '၀၁၂၃၄၅၆၇၈၉'[digit]);
 export const groups = [
-  {name:'နန္ဒာ', color:'အနီ', side:'ဘယ်', direction:'အရှေ့', note:'စိတ်နှလုံး ကြည်လင်ရွှင်လန်းခြင်း၊ အဆောက်အအုံ စတင်တည်ဆောက်ခြင်း'},
-  {name:'ဘဒြာ', color:'အဝါ', side:'ညာ', direction:'တောင်', note:'တင့်တယ်လှပခြင်း၊ ကုန်သွယ်ခြင်း၊ ဘွဲ့နှင့် ရာထူးပေးအပ်ခြင်း'},
-  {name:'ဇေယျာ', color:'အပြာ', side:'ဘယ်', direction:'အနောက်', note:'အောင်မြင်ခြင်း၊ စူးစမ်းလေ့လာခြင်း၊ အသုံးအဆောင်ပစ္စည်း ပြုလုပ်ခြင်း'},
-  {name:'ရိတ္တာ', color:'အဖြူ', side:'ညာ', direction:'မြောက်', note:'ကုန်ခန်းလျော့ပါးခြင်း၊ သမာဓိထူထောင်ခြင်း၊ သီလဆောက်တည်ခြင်း'},
-  {name:'ပုဏ္ဏာ', color:'အနက်', side:'ဘယ်', direction:'အရှေ့မြောက်', note:'ပြည့်စုံခြင်း၊ အတတ်ပညာ စတင်သင်ကြားခြင်း၊ ရေရှည်တည်တံ့စေလိုသော အမှုများ'}
+  {key:'nanda', name:'နန္ဒာ', color:'အနီ', swatch:'#dc2626', side:'ဘယ်', direction:'အရှေ့', note:'စိတ်နှလုံး ကြည်လင်ရွှင်လန်းခြင်း၊ အဆောက်အအုံ စတင်တည်ဆောက်ခြင်း'},
+  {key:'bhadra', name:'ဘဒြာ', color:'အဝါ', swatch:'#eab308', side:'ညာ', direction:'တောင်', note:'တင့်တယ်လှပခြင်း၊ ကုန်သွယ်ခြင်း၊ ဘွဲ့နှင့် ရာထူးပေးအပ်ခြင်း'},
+  {key:'jaya', name:'ဇေယျာ', color:'မိုးပြာ', swatch:'#38bdf8', side:'ဘယ်', direction:'အနောက်', note:'အောင်မြင်ခြင်း၊ စူးစမ်းလေ့လာခြင်း၊ အသုံးအဆောင်ပစ္စည်း ပြုလုပ်ခြင်း'},
+  {key:'rikta', name:'ရိတ္တာ', color:'အဖြူ', swatch:'#ffffff', side:'ညာ', direction:'မြောက်', note:'ကုန်ခန်းလျော့ပါးခြင်း၊ သမာဓိထူထောင်ခြင်း၊ သီလဆောက်တည်ခြင်း'},
+  {key:'purna', name:'ပုဏ္ဏာ', color:'အနက်', swatch:'#111827', side:'ဘယ်', direction:'အရှေ့မြောက်', note:'ပြည့်စုံခြင်း၊ အတတ်ပညာ စတင်သင်ကြားခြင်း၊ ရေရှည်တည်တံ့စေလိုသော အမှုများ'}
 ];
 export const stages = ['ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတာ'];
 export const stageNotes = ['ကလေးအဆင့် · အားဖြည့်ခြင်း', 'လူငယ်အဆင့် · လန်းဆန်းတက်ကြွခြင်း', 'လူလတ်အဆင့် · ရင့်ကျက်တည်ငြိမ်ခြင်း', 'လူအိုအဆင့် · အားဆုတ်ခြင်း', 'စက်ဝန်းဆုံးအဆင့်'];
@@ -27,6 +27,13 @@ export const yugRules = [
   {name:'ဖြတ်တောက်သောယုဂ်', en:'Khrachaka', page:44, numbers:[12,11,10,9,8,7,6]}
 ];
 export const groupOf = number => (number + 4) % 5;
+export const tithiLabel = index => {
+  const i = ((index % 30) + 30) % 30;
+  if (i === 14) return 'လပြည့် တိထိ ၁၅ လုံး';
+  if (i === 29) return 'လကွယ် တိထိ';
+  if (i < 14) return 'လဆန်း တိထိ ' + mm(i + 1) + ' လုံး';
+  return 'လပြည့်ကျော် တိထိ ' + mm(i - 14) + ' လုံး';
+};
 export const directionStages = group => stages.map((stage,i) => ({
   stage, group:groups[(group+i)%5], note:stageNotes[i]
 }));
@@ -58,7 +65,7 @@ export function readTithi(ms) {
   const hourlyFull = start + (hour + 1) * HOUR <= end;
   const twelveMinFull = start + (twelveMin + 1) * TWELVE_MIN <= end;
   return {
-    number, group, weekday, start, end, angle,
+    index, number, group, weekday, start, end, angle,
     hour, hourlyGroup: (group + hour) % 5, hourlyFull,
     twelveMin, twelveMinGroup: (group + twelveMin) % 5, twelveMinFull,
     waxing: index < 15,
@@ -88,11 +95,14 @@ export function buildHourlySchedule(t, currentMs) {
   while (cursor + HOUR <= t.end) {
     const start = cursor;
     const end = cursor + HOUR;
+    const tithiIndex = (t.index + i) % 30;
     const groupIndex = (t.group + i) % 5;
     rows.push({
       index: i + 1,
       start,
       end,
+      tithiIndex,
+      tithiText: tithiLabel(tithiIndex),
       groupIndex,
       group: groups[groupIndex],
       directions: directionStages(groupIndex),
@@ -118,12 +128,15 @@ export function buildTwelveMinSchedule(t, currentMs) {
   while (cursor + TWELVE_MIN <= t.end) {
     const start = cursor;
     const end = cursor + TWELVE_MIN;
+    const tithiIndex = (t.index + i) % 30;
     const groupIndex = (t.group + i) % 5;
     rows.push({
       index: i + 1,
       hourIndex: Math.floor(i / 5),
       start,
       end,
+      tithiIndex,
+      tithiText: tithiLabel(tithiIndex),
       groupIndex,
       group: groups[groupIndex],
       directions: directionStages(groupIndex),
@@ -151,6 +164,7 @@ export function buildTwelveYearSchedule(bornMs, targetMs, periods = 10) {
   for (let k = 0; k < total; k++) {
     const startAge = k * 12;
     const endAge = (k + 1) * 12;
+    const tithiIndex = (natal.index + k) % 30;
     const groupIndex = (natal.group + k) % 5;
     rows.push({
       index: k + 1,
@@ -158,6 +172,8 @@ export function buildTwelveYearSchedule(bornMs, targetMs, periods = 10) {
       endAge,
       startDate: addYears(bornMs, startAge),
       endDate: addYears(bornMs, endAge),
+      tithiIndex,
+      tithiText: tithiLabel(tithiIndex),
       groupIndex,
       group: groups[groupIndex],
       directions: directionStages(groupIndex),
