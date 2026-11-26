@@ -1,5 +1,5 @@
-import {inputKey, methods, needsBirth, savedInput, validateInput} from './calculation-input.mjs?v=20261126b';
-import {OFFSET} from './engine.mjs?v=20261126b';
+import {inputKey, methods, needsBirth, savedInput, validateInput} from './calculation-input.mjs?v=20261127';
+import {OFFSET} from './engine.mjs?v=20261127';
 const byId = id => document.getElementById(id);
 const when = byId('when');
 const birth = byId('birth');

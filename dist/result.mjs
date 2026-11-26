@@ -1,11 +1,11 @@
-import {litFraction, showMoon} from './moon.mjs?v=20261126b';
-import {inputKey, savedInput, validateInput} from './calculation-input.mjs?v=20261126b';
+import {litFraction, showMoon} from './moon.mjs?v=20261127';
+import {inputKey, savedInput, validateInput} from './calculation-input.mjs?v=20261127';
 import {
   HOUR, TWELVE_MIN, OFFSET, mm, groups, groupOf, days, names, directionStages, tithiLabel, tithiRemedies,
-  specialTithiRules, readTithi, completedYears,
+  garmentTithiEffects, specialTithiRules, readTithi, completedYears,
   buildHourlySchedule, buildTwelveMinSchedule, buildTwelveYearSchedule, findUpcomingSpecialTithis
-} from './engine.mjs?v=20261126b';
-import {table} from './table.mjs?v=20261126b';
+} from './engine.mjs?v=20261127';
+import {table} from './table.mjs?v=20261127';
 
 const byId = id => document.getElementById(id);
 const isoMM = ms => new Date(ms + OFFSET).toISOString();
@@ -177,6 +177,20 @@ function renderSpecialTab(upcoming, filterKey) {
       : '<p class="basis">ရွေးချယ်ထားသော ကာလအတွင်း တိုက်ဆိုင်မှု မတွေ့ပါ။</p>'}`;
 }
 
+function renderGarmentTab(currentIndex) {
+  const rowsHtml = garmentTithiEffects.map((effect, idx) => {
+    const g = groups[idx % 5];
+    const active = idx === currentIndex;
+    return `<tr${active ? ' class="active-row"' : ''}>
+      <td><div class="tithi-cell"><strong>${tithiLabel(idx)}${active ? ' <span class="badge">လက်ရှိ</span>' : ''}</strong>${colorPill(g)}</div></td>
+      <td>${effect}</td>
+    </tr>`;
+  }).join('');
+  return `
+    <p class="basis">အဝတ်အထည် စတင်ပြီး ချုပ်သည့် တိထီ ၃၀ နှင့် အကျိုးပေးများ</p>
+    <div class="table-wrap schedule-wrap"><table class="schedule-table remedy-table"><thead><tr><th scope="col">တိထီ နှင့် အရောင်</th><th scope="col">အဝတ်အထည် စတင်ချုပ်လုပ်ခြင်း အကျိုးပေး</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
+}
+
 function renderRemedyTab(currentNumber) {
   const ordered = [...tithiRemedies.slice(1), tithiRemedies[0]];
   const rows = ordered.map(item => {
@@ -271,6 +285,7 @@ function calculate() {
       ${table(['အဝတ္ထာန်', 'တိထိအုပ်စု / အရောင်', 'အရပ်', 'အကျိုးပေး'], directions.map(r => [r.stage, colorPill(r.group), r.group.direction, r.note]))}
       <div class="mini"><h3>တိုက်ဆိုင်သော ယုဂ်</h3><p>${t.yugs.map(y => y.name).join(' · ') || 'မရှိပါ။'}</p></div>
       ${renderSpecialCard(t.specialTithis)}
+      <div class="mini"><h3>အဝတ်အထည် စတင်ချုပ်လုပ်ခြင်း အကျိုးပေး · ${tithiLabel(t.index)}</h3><p>${t.garmentEffect}</p></div>
       ${renderRemedyCard('ရောက်ဆဲ တိထီ ယတြာနှင့် အစီအရင်', tithiLabel(t.index), t.remedy)}
       ${natalRemedyHtml}
       <section class="schedules" aria-label="အသင့်တွက်ပြီးသား တိထီပိုင်းဇယားများ">
@@ -280,6 +295,7 @@ function calculate() {
           <button type="button" role="tab" data-tab="twelveMin" aria-selected="${activeTab === 'twelveMin'}">၁၂ မိနစ်ပိုင်း (${mm(twelveMinSchedule.rows.length)})</button>
           <button type="button" role="tab" data-tab="twelveYear" aria-selected="${activeTab === 'twelveYear'}">၁၂ နှစ်ပိုင်း</button>
           <button type="button" role="tab" data-tab="special" aria-selected="${activeTab === 'special'}">အထူးတိထီများ</button>
+          <button type="button" role="tab" data-tab="garment" aria-selected="${activeTab === 'garment'}">အဝတ်ချုပ် တိထီ (၃၀)</button>
           <button type="button" role="tab" data-tab="remedy" aria-selected="${activeTab === 'remedy'}">တိထီ ယတြာဇယား (၁၆)</button>
         </div>
         <div id="schedule-panel" class="schedule-panel" role="tabpanel"></div>
@@ -312,6 +328,8 @@ function calculate() {
             paintTab();
           });
         });
+      } else if (activeTab === 'garment') {
+        panel.innerHTML = renderGarmentTab(t.index);
       } else if (activeTab === 'remedy') {
         panel.innerHTML = renderRemedyTab(t.number);
       } else {
