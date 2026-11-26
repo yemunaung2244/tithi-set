@@ -52,11 +52,15 @@ function renderRemedyCard(title, tithiText, remedy) {
 
 function renderSpecialCard(specialTithis) {
   if (!specialTithis.length) return '';
-  const items = specialTithis.map(rule => `
+  const items = specialTithis.map(rule => {
+    const extra = rule.details ? `<div class="special-details">${rule.details.map(p => `<p>${p}</p>`).join('')}</div>` : '';
+    return `
     <div class="special-hit special-${rule.key}">
       <strong>${rule.name}</strong>
       <p>${rule.note}</p>
-    </div>`).join('');
+      ${extra}
+    </div>`;
+  }).join('');
   return `<div class="mini special-card"><h3>တိုက်ဆိုင်သော အထူးတိထီ</h3><div class="special-list">${items}</div></div>`;
 }
 
@@ -144,6 +148,9 @@ function renderSpecialTab(upcoming, filterKey) {
   const noteText = activeRule
     ? `${activeRule.name} — ${activeRule.note}`
     : `စစ်ဆေးချိန်မှစ၍ လာမည့် ရက် ၁၈၀ အတွင်း ကျရောက်မည့် အထူးတိထီများ (${mm(upcoming.length)} ကြိမ်)`;
+  const detailBox = activeRule?.details
+    ? `<div class="special-hit special-${activeRule.key} special-box"><strong>${activeRule.name}</strong><div class="special-details">${activeRule.details.map(p => `<p>${p}</p>`).join('')}</div></div>`
+    : '';
   const rowsHtml = filtered.map(r => {
     const badges = r.matched.map(m => `<span class="special-chip special-${m.key}">${m.short}</span>`).join(' ');
     return `<tr${r.active ? ' class="active-row"' : ''}>
@@ -164,6 +171,7 @@ function renderSpecialTab(upcoming, filterKey) {
         }).join('')}
       </div>
     </div>
+    ${detailBox}
     ${filtered.length
       ? `<div class="table-wrap schedule-wrap"><table class="schedule-table remedy-table"><thead><tr><th scope="col">ရက်စွဲနှင့် နေ့</th><th scope="col">အချိန်ကာလ</th><th scope="col">တိထိ နှင့် အရောင်</th><th scope="col">အထူးတိထီ</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>`
       : '<p class="basis">ရွေးချယ်ထားသော ကာလအတွင်း တိုက်ဆိုင်မှု မတွေ့ပါ။</p>'}`;
