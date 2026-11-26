@@ -1,7 +1,7 @@
 import {litFraction, showMoon} from './moon.mjs';
 import {inputKey, savedInput, validateInput} from './calculation-input.mjs';
 import {
-  HOUR, TWELVE_MIN, OFFSET, mm, groups, days, names, directionStages, tithiLabel,
+  HOUR, TWELVE_MIN, OFFSET, mm, groups, groupOf, days, names, directionStages, tithiLabel, tithiRemedies,
   readTithi, completedYears, buildHourlySchedule, buildTwelveMinSchedule, buildTwelveYearSchedule
 } from './engine.mjs';
 import {table} from './table.mjs';
@@ -23,17 +23,30 @@ const tithiName = t => `${tithiLabel(t.index)} · ${names[t.number]}`;
 const colorPill = g => `<span class="tithi-pill tithi-${g.key}"><span class="swatch" aria-hidden="true"></span>${g.name} · ${g.color}</span>`;
 const tithiCell = r => `<div class="tithi-cell"><strong>${r.tithiText}</strong>${colorPill(r.group)}</div>`;
 
-function scheduleTable(headers, rows) {
+function scheduleTable(headers, rows, highlightYuva = true) {
   const head = headers.map(h => `<th scope="col">${h}</th>`).join('');
   const body = rows.map(r => {
     const cls = r.active ? ' class="active-row"' : '';
     const cells = r.cells.map((c, idx) => {
-      const colCls = idx === 5 ? ' class="yuva-col"' : '';
+      const colCls = highlightYuva && idx === 5 ? ' class="yuva-col"' : '';
       return `<td${colCls}>${c}</td>`;
     }).join('');
     return `<tr${cls}>${cells}</tr>`;
   }).join('');
   return `<div class="table-wrap schedule-wrap"><table class="schedule-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+function renderRemedyCard(title, tithiText, remedy) {
+  const deityTag = remedy.deity ? ` <span class="deity-tag">(${remedy.deity})</span>` : '';
+  return `
+    <div class="mini remedy-card">
+      <h3>${title} · ${tithiText}${deityTag}</h3>
+      <dl class="remedy-grid">
+        <div><dt>တိထီ အစီအရင်</dt><dd>${remedy.arrangement}</dd></div>
+        <div><dt>တိထီ ယတြာ</dt><dd>${remedy.yadaya}</dd></div>
+        <div class="remedy-benefit"><dt>အကျိုးကျေးဇူး</dt><dd>${remedy.benefit}</dd></div>
+      </dl>
+    </div>`;
 }
 
 function renderRemainderNote(rem, unitLabel) {
@@ -114,6 +127,27 @@ function renderTwelveYearTab(born, ms) {
     ${scheduleTable(['သက်တမ်း', 'ရက်စွဲကာလ', 'တိထိ နှင့် အရောင်', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတာ'], rows)}`;
 }
 
+function renderRemedyTab(currentNumber) {
+  const ordered = [...tithiRemedies.slice(1), tithiRemedies[0]];
+  const rows = ordered.map(item => {
+    const g = groups[groupOf(item.number)];
+    const active = item.number === currentNumber;
+    return {
+      active,
+      cells: [
+        `<div class="tithi-cell"><strong>${item.label}${active ? ' <span class="badge">လက်ရှိ</span>' : ''}</strong>${colorPill(g)}</div>`,
+        item.arrangement,
+        item.yadaya,
+        item.benefit,
+        item.deity || '—'
+      ]
+    };
+  });
+  return `
+    <p class="basis">တိထီ ၁ လုံးမှ ၁၄ လုံး၊ လပြည့်တိထီနှင့် လကွယ်တိထီအတွက် အစီအရင်၊ ယတြာနှင့် အကျိုးကျေးဇူးများ</p>
+    <div class="table-wrap schedule-wrap"><table class="schedule-table remedy-table"><thead><tr><th scope="col">တိထီ</th><th scope="col">တိထီ အစီအရင်</th><th scope="col">တိထီ ယတြာ</th><th scope="col">အကျိုးကျေးဇူး</th><th scope="col">အုပ်စိုး</th></tr></thead><tbody>${rows.map(r => `<tr${r.active ? ' class="active-row"' : ''}>${r.cells.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+
 function calculate() {
   const input = savedInput();
   if (!input) {
@@ -124,6 +158,7 @@ function calculate() {
     const {ms, born} = validateInput(input);
     const {method} = input;
     const t = readTithi(ms);
+    const natal = Number.isFinite(born) ? readTithi(born) : null;
     const actual = groups[t.group];
     let base = t.group;
     let caption = 'ရောက်ဆဲ တိထိ · ' + tithiLabel(t.index) + ' (' + actual.name + ' · ' + actual.color + ')';
@@ -146,7 +181,6 @@ function calculate() {
         unusedNotice = 'ဤအချိန်သည် တိထိအဆုံးပိုင်း ၁၂ မိနစ် မပြည့်သော ကျန်ရှိချိန်ဖြစ်သဖြင့် ၁၂ မိနစ်ပိုင်းစနစ်တွင် မသုံးပါ။';
       }
     } else if (method === 'birth' || method === 'age') {
-      const natal = readTithi(born);
       base = natal.group;
       caption = 'ဇာတိတိထိ · ' + tithiName(natal) + ' · ' + groups[base].name + ' (' + groups[base].color + ')';
       if (method === 'age') {
@@ -165,6 +199,10 @@ function calculate() {
       : 'hourly';
     let showAllTwelveMin = false;
 
+    const natalRemedyHtml = natal && natal.number !== t.number
+      ? renderRemedyCard('ဇာတိတိထိ ယတြာနှင့် အစီအရင်', tithiLabel(natal.index), natal.remedy)
+      : '';
+
     byId('result').innerHTML = `
       <div class="lunar-result">
         <canvas id="moon-phase" width="192" height="192" aria-hidden="true"></canvas>
@@ -180,12 +218,15 @@ function calculate() {
       ${unusedNotice ? `<p class="remainder-note is-active">${unusedNotice}</p>` : ''}
       ${table(['အဝတ္ထာန်', 'တိထိအုပ်စု / အရောင်', 'အရပ်'], directions.map(r => [r.stage, colorPill(r.group), r.group.direction]))}
       <div class="mini"><h3>တိုက်ဆိုင်သော ယုဂ်</h3><p>${t.yugs.map(y => y.name).join(' · ') || 'မရှိပါ။'}</p></div>
+      ${renderRemedyCard('ရောက်ဆဲ တိထီ ယတြာနှင့် အစီအရင်', tithiLabel(t.index), t.remedy)}
+      ${natalRemedyHtml}
       <section class="schedules" aria-label="အသင့်တွက်ပြီးသား တိထီပိုင်းဇယားများ">
         <h3>အသင့်တွက်ပြီးသား တိထီပိုင်းဇယားများ</h3>
         <div class="tabs" role="tablist">
           <button type="button" role="tab" data-tab="hourly" aria-selected="${activeTab === 'hourly'}">၁ နာရီပိုင်း (${mm(hourlySchedule.rows.length)})</button>
           <button type="button" role="tab" data-tab="twelveMin" aria-selected="${activeTab === 'twelveMin'}">၁၂ မိနစ်ပိုင်း (${mm(twelveMinSchedule.rows.length)})</button>
           <button type="button" role="tab" data-tab="twelveYear" aria-selected="${activeTab === 'twelveYear'}">၁၂ နှစ်ပိုင်း</button>
+          <button type="button" role="tab" data-tab="remedy" aria-selected="${activeTab === 'remedy'}">တိထီ ယတြာဇယား (၁၆)</button>
         </div>
         <div id="schedule-panel" class="schedule-panel" role="tabpanel"></div>
       </section>`;
@@ -208,6 +249,8 @@ function calculate() {
             paintTab();
           });
         });
+      } else if (activeTab === 'remedy') {
+        panel.innerHTML = renderRemedyTab(t.number);
       } else {
         panel.innerHTML = renderTwelveYearTab(born, ms);
         const inlineForm = byId('inline-birth-form');

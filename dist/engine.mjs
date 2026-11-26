@@ -16,6 +16,24 @@ export const stages = ['ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ�
 export const stageNotes = ['ကလေးအဆင့် · အားဖြည့်ခြင်း', 'လူငယ်အဆင့် · လန်းဆန်းတက်ကြွခြင်း', 'လူလတ်အဆင့် · ရင့်ကျက်တည်ငြိမ်ခြင်း', 'လူအိုအဆင့် · အားဆုတ်ခြင်း', 'စက်ဝန်းဆုံးအဆင့်'];
 export const days = ['တနင်္ဂနွေ','တနင်္လာ','အင်္ဂါ','ဗုဒ္ဓဟူး','ကြာသပတေး','သောကြာ','စနေ'];
 export const names = ['Amavasya','Prathama','Dwitiya','Tritiya','Chaturthi','Panchami','Shashti','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi','Poornima'];
+export const tithiRemedies = [
+  {number:0, label:'လကွယ်တိထီ', arrangement:'အဆင်တန်ဆာ ပစ္စည်းများ', yadaya:'ကန်စွန်းဥကဲ့သို့ ဥအမျိုးမျိုး', benefit:'လွန်လေပြီးသော ဘိုးဘွားများ၏ ကောင်းကျိုးတယ်။', deity:''},
+  {number:1, label:'တိထီ ၁ လုံး', arrangement:'ပန်း', yadaya:'နို့ထမင်း', benefit:'စီးပွားတက်စေသည်။', deity:'မီးနတ်'},
+  {number:2, label:'တိထီ ၂ လုံး', arrangement:'ဆန်', yadaya:'ထမင်းနှင့်ဒိန်ချဉ်', benefit:'သက်ရှည်ကျန်းမာသည်။', deity:'ဗြဟ္မာမင်း'},
+  {number:3, label:'တိထီ ၃ လုံး', arrangement:'ထောပတ်', yadaya:'အချိုမှုန့်', benefit:'ကျန်းမာရေးကောင်းသည်။', deity:'ဂေါရီ'},
+  {number:4, label:'တိထီ ၄ လုံး', arrangement:'ဒိန်ချဉ်', yadaya:'ရေပြည့်အိုး', benefit:'ဆန္ဒပြည့်တယ်။', deity:'Ganesh'},
+  {number:5, label:'တိထီ ၅ လုံး', arrangement:'ထမင်း', yadaya:'ပဲစိမ်းလုံး', benefit:'စွဲဆောင်မှုကောင်းသည်။', deity:'မြွေ'},
+  {number:6, label:'တိထီ ၆ လုံး', arrangement:'ရွှေစိမ်ထားသော ရေ', yadaya:'ထမင်းယို', benefit:'နောက်မျိုးဆက်သစ်ကောင်းသည်။', deity:'Kartik'},
+  {number:7, label:'တိထီ ၇ လုံး', arrangement:'ကြံသကာ / ထန်းလျက်', yadaya:'နှမ်း / နှမ်းနှင့်ပတ်သက်သော', benefit:'အကြွေးကျေသည်။', deity:'နေမင်း'},
+  {number:8, label:'တိထီ ၈ လုံး', arrangement:'သံပုရာသီး', yadaya:'ပဲရာဇာ', benefit:'ရာဇဓါတ်ရသည်။', deity:'ရူဒြ'},
+  {number:9, label:'တိထီ ၉ လုံး', arrangement:'ရေ', yadaya:'ဂျုံယို', benefit:'ပန်းနာရောဂါကင်းပြီး အဆုတ်အားကောင်းသည်။', deity:'Ambika'},
+  {number:10, label:'တိထီ ၁၀ လုံး', arrangement:'ဂျုံမှုန့်နှင့် ဒိန်ချဉ် ရောနယ်', yadaya:'ဒိန်ချဉ်ထဲ ဂျုံမှုန့်အနည်းငယ်ထည့်', benefit:'ပီယအားကောင်း', deity:'ဓမ္မရာဇာ - ယမမင်း'},
+  {number:11, label:'တိထီ ၁၁ လုံး', arrangement:'ဂျုံစေ့ / မုန့်ဆန်း', yadaya:'မုန့်စမ်း', benefit:'အကြောက်ကင်းတယ်။', deity:'Vishwanath'},
+  {number:12, label:'တိထီ ၁၂ လုံး', arrangement:'နို့ထမင်း', yadaya:'မိမိအနှစ်သက်ဆုံးအစားအစာ', benefit:'အနှောင့်အယှက်ကင်းတယ်။', deity:'Vishnu'},
+  {number:13, label:'တိထီ ၁၃ လုံး', arrangement:'ကြံသကာ / ထန်းလျက်', yadaya:'ဘာလီစေ့ကြော်', benefit:'ခွန်အားကောင်းတယ်', deity:'Kamdev'},
+  {number:14, label:'တိထီ ၁၄ လုံး', arrangement:'ကုံကုမံ', yadaya:'အသီး', benefit:'ပညာတိုးတယ်။', deity:'ကာလီမယ်တော်'},
+  {number:15, label:'လပြည့်တိထီ', arrangement:'ပဲဝါ', yadaya:'ပိန္နဲသီး', benefit:'မျက်စိရောဂါကင်းသည်။', deity:'လမင်းကြီး'}
+];
 export const yugRules = [
   {name:'သိဒ္ဓိယုဂ်', en:'Siddhi', page:41, groups:[[],[],[2],[1],[4],[0],[3]]},
   {name:'အမရိတယုဂ်', en:'Amrita', page:41, groups:[[4],[4],[1],[0],[2],[3],[0]]},
@@ -69,6 +87,7 @@ export function readTithi(ms) {
     hour, hourlyGroup: (group + hour) % 5, hourlyFull,
     twelveMin, twelveMinGroup: (group + twelveMin) % 5, twelveMinFull,
     waxing: index < 15,
+    remedy: tithiRemedies[number],
     yugs: yugRules.filter(rule => rule.groups?.[weekday].includes(group) || rule.numbers?.[weekday] === number)
   };
 }
