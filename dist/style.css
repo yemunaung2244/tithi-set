@@ -10,3 +10,6 @@
 .transcript-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:2.05}
 #transcript .table-wrap{margin-top:16px}
 @media(max-width:720px){.shell{width:calc(100% - 24px)}.calculator{grid-template-columns:1fr}.hero{margin-top:12px}.nav a{padding:6px 2px}.times{grid-template-columns:1fr 1fr}}
+.lunar-result{display:grid;grid-template-columns:clamp(70px,15vw,118px) minmax(0,1fr);align-items:center;gap:clamp(10px,2vw,19px)}
+.lunar-result canvas{width:100%;height:auto;display:block;border-radius:50%;filter:drop-shadow(0 4px 8px #12334832)}
+.moon-light{color:var(--muted);font-size:.875rem;margin:-3px 0 7px}

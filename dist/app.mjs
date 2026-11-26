@@ -1,3 +1,4 @@
+import {litFraction, showMoon} from './moon.mjs';
 import {transcript} from './transcript.mjs';
 import {HOUR, OFFSET, mm, groups, stages, days, names, groupOf, directionStages, readTithi, completedYears, yugRules} from './engine.mjs';
 const byId = id => document.getElementById(id);
@@ -59,15 +60,22 @@ function calculate() {
     }
     const directions = directionStages(base);
     byId('result').innerHTML = `
-      <p class="kicker">${days[t.weekday]} · ${fmt(ms)}</p>
-      <h2>${tithiName(t)}</h2>
-      <div class="tags"><span>${actual.name} တိထိ</span><span>${actual.color}</span><span>${actual.side} ခြေ</span></div>
+      <div class="lunar-result">
+        <canvas id="moon-phase" width="192" height="192" aria-hidden="true"></canvas>
+        <div>
+          <p class="kicker">${days[t.weekday]} · ${fmt(ms)}</p>
+          <h2>${tithiName(t)}</h2>
+          <p class="moon-light">လမျက်နှာပြင် အလင်းရောင် ${mm((litFraction(t.angle)*100).toFixed(1))}%</p>
+          <div class="tags"><span>${actual.name} တိထိ</span><span>${actual.color}</span><span>${actual.side} ခြေ</span></div>
+        </div>
+      </div>
       <dl class="times"><div><dt>တိထိ စတင်ချိန်</dt><dd>${fmt(t.start)}</dd></div><div><dt>တိထိ ပြီးဆုံးချိန်</dt><dd>${fmt(t.end)}</dd></div></dl>
       <h3>အဝတ္ထာန် အရပ်များ</h3><p class="basis">${caption}</p>
       ${table(['အဝတ္ထာန်','အရပ်','ကျမ်းဖော်ပြချက်'],directions.map(r=>[r.stage,r.group.direction,r.note]))}
       <div class="mini"><h3>တိထိနှင့် ယုဂ်</h3><p>${t.yugs.length?t.yugs.map(y=>pageLink(y.page,y.name)).join(' · '):'ကျမ်းပါ စည်းမျဉ်းများနှင့် တိုက်ဆိုင်သော ယုဂ် မရှိပါ။'}</p></div>
       <div class="mini"><h3>${actual.name} တိထိ၏ ရိုးရာဖော်ပြချက်</h3><p>${actual.note} · ${pageLink(39,'ကျမ်းကို ဖတ်ပါ')}</p></div>
       <div class="mini"><h3>တိထိလုံးအလိုက် ကျမ်းဖော်ပြချက်</h3><p>${numberNotes[t.number]} · ${pageLink(t.number===1?45:t.number>=2&&t.number<=5?46:t.number>=6&&t.number<=11?47:48,'ကျမ်းကို ဖတ်ပါ')}</p></div>`;
+    void showMoon(byId('moon-phase'), t.angle);
   } catch (failure) {
     byId('result').textContent = 'ရက်စွဲနှင့် အချိန်ကို ပြင်ပြီး ပြန်တွက်ပါ။';
     error.textContent = failure instanceof TypeError ? 'ရွေးထားသည့် အချိန်အတွက် တွက်ချက်မှု မပြီးဆုံးနိုင်ပါ။' : failure.message;
