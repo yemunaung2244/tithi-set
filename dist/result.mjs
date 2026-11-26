@@ -1,11 +1,11 @@
-import {litFraction, showMoon} from './moon.mjs';
-import {inputKey, savedInput, validateInput} from './calculation-input.mjs';
+import {litFraction, showMoon} from './moon.mjs?v=20261126b';
+import {inputKey, savedInput, validateInput} from './calculation-input.mjs?v=20261126b';
 import {
   HOUR, TWELVE_MIN, OFFSET, mm, groups, groupOf, days, names, directionStages, tithiLabel, tithiRemedies,
   specialTithiRules, readTithi, completedYears,
   buildHourlySchedule, buildTwelveMinSchedule, buildTwelveYearSchedule, findUpcomingSpecialTithis
-} from './engine.mjs';
-import {table} from './table.mjs';
+} from './engine.mjs?v=20261126b';
+import {table} from './table.mjs?v=20261126b';
 
 const byId = id => document.getElementById(id);
 const isoMM = ms => new Date(ms + OFFSET).toISOString();
