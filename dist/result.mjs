@@ -70,7 +70,7 @@ function renderHourlyTab(schedule) {
   }));
   return `
     <p class="basis">တိထိ စတင်ချိန်မှစ၍ ၁ နာရီပြည့် အပိုင်းပေါင်း ${mm(schedule.rows.length)} ပိုင်း (တစ်ပိုင်းလျှင် ၁ နာရီစီ အစဉ်လိုက် လှည့်တွက်ထားသည်)</p>
-    ${scheduleTable(['အပိုင်း', 'အချိန်ကာလ', 'တိထိ နှင့် အရောင်', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတာ'], rows)}
+    ${scheduleTable(['အပိုင်း', 'အချိန်ကာလ', 'တိထိ နှင့် အရောင်', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတ'], rows)}
     ${renderRemainderNote(schedule.remainder, '၁ နာရီ')}`;
 }
 
@@ -96,7 +96,7 @@ function renderTwelveMinTab(schedule, showAll, currentHourIndex) {
         <button type="button" data-min-scope="all" class="${showAll ? 'is-on' : ''}">တိထိတစ်ခုလုံး (${mm(schedule.rows.length)} ပိုင်း)</button>
       </div>
     </div>
-    ${scheduleTable(['အပိုင်း', 'အချိန်ကာလ', 'တိထိ နှင့် အရောင်', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတာ'], rows)}
+    ${scheduleTable(['အပိုင်း', 'အချိန်ကာလ', 'တိထိ နှင့် အရောင်', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတ'], rows)}
     ${renderRemainderNote(schedule.remainder, '၁၂ မိနစ်')}`;
 }
 
@@ -124,7 +124,7 @@ function renderTwelveYearTab(born, ms) {
   }));
   return `
     <p class="basis">ဇာတိတိထိ · ${tithiName(schedule.natal)} (${groups[schedule.natal.group].name} · ${groups[schedule.natal.group].color}) · မွေးချိန် ${fmt(born)} · လက်ရှိအသက် ${mm(schedule.age)} နှစ်</p>
-    ${scheduleTable(['သက်တမ်း', 'ရက်စွဲကာလ', 'တိထိ နှင့် အရောင်', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတာ'], rows)}`;
+    ${scheduleTable(['သက်တမ်း', 'ရက်စွဲကာလ', 'တိထိ နှင့် အရောင်', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတ'], rows)}`;
 }
 
 function renderRemedyTab(currentNumber) {
@@ -216,7 +216,7 @@ function calculate() {
       <dl class="times"><div><dt>တိထိ စတင်ချိန်</dt><dd>${fmt(t.start)}</dd></div><div><dt>တိထိ ပြီးဆုံးချိန်</dt><dd>${fmt(t.end)}</dd></div></dl>
       <h3>အဝတ္ထာန် အရပ်များ</h3><p class="basis">${caption}</p>
       ${unusedNotice ? `<p class="remainder-note is-active">${unusedNotice}</p>` : ''}
-      ${table(['အဝတ္ထာန်', 'တိထိအုပ်စု / အရောင်', 'အရပ်'], directions.map(r => [r.stage, colorPill(r.group), r.group.direction]))}
+      ${table(['အဝတ္ထာန်', 'တိထိအုပ်စု / အရောင်', 'အရပ်', 'အကျိုးပေး'], directions.map(r => [r.stage, colorPill(r.group), r.group.direction, r.note]))}
       <div class="mini"><h3>တိုက်ဆိုင်သော ယုဂ်</h3><p>${t.yugs.map(y => y.name).join(' · ') || 'မရှိပါ။'}</p></div>
       ${renderRemedyCard('ရောက်ဆဲ တိထီ ယတြာနှင့် အစီအရင်', tithiLabel(t.index), t.remedy)}
       ${natalRemedyHtml}
