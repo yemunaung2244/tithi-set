@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#edf7fd">
+<meta name="description" content="တိထိ၊ အဝတ္ထာန်နှင့် ယုဂ်များကို မြန်မာစံတော်ချိန်ဖြင့် တွက်ချက်ရန်">
+<title>တိထိစက်</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header><div class="shell masthead"><a href="#calculator"><span class="brand-icon" aria-hidden="true">◐</span> တိထိစက်</a><span>မြန်မာစံတော်ချိန် <b>UTC+06:30</b></span></div></header>
+<main class="shell">
+<section class="hero">
+<div><p class="kicker">သရောဒယ ကျမ်းကိုး</p><h1>တိထိစက်</h1><p>လဆန်း၊ လဆုတ် တိထိ၊ အရပ်နှင့် ယုဂ်များကို အချိန်အလိုက် ကြည့်ရှုပါ။</p></div>
+<div class="orbit" aria-hidden="true"><i></i><span>◐</span></div>
+</section>
+<nav aria-label="ကဏ္ဍများ" class="nav"><a href="#calculator">တိထိတွက်ရန်</a><a href="#tables">ကျမ်းကိုးဇယား</a><a href="#reader">မူရင်းစာမျက်နှာ</a></nav>
+<section id="calculator" class="calculator">
+<div class="settings">
+<form id="form" class="panel">
+<h2>ရက်စွဲနှင့် အချိန်</h2>
+<label>စစ်ဆေးလိုသောအချိန်<input id="when" type="datetime-local" min="1600-01-01T00:00" max="2200-12-31T23:59:59" step="1" required></label>
+<label>အရပ်တွက်နည်း<select id="method"><option value="current">ရောက်ဆဲ တိထိ</option><option value="hourly">တစ်နာရီစီ လှည့်တွက်</option><option value="birth">ဇာတိတိထိ</option><option value="age">၁၂ နှစ်သက်တမ်း</option></select></label>
+<label id="birth-field" hidden>မွေးရက်နှင့် မွေးချိန်<input id="birth" type="datetime-local" min="1600-01-01T00:00" max="2200-12-31T23:59:59" step="1"></label>
+<div class="actions"><button class="primary">တွက်ချက်မည်</button><button id="now" type="button">ယခုအချိန်</button></div>
+<p id="error" role="alert" hidden></p>
+</form>
+<details class="panel notes"><summary>တွက်ချက်ပုံ</summary><p>နေ၊ လ လောင်ဂျီတွဒ်ကွာခြားချက် ၁၂° တိုင်း တိထိတစ်လုံး ပြောင်းသည်။ ယုဂ်အတွက် မြန်မာစံတော်ချိန် သန်းခေါင်မှ ရက်ပြောင်းသည်ဟု သတ်မှတ်ထားသည်။ ပုဏ္ဏာအရပ်အတွက် ကျမ်းစာမျက်နှာ ၂၄ ပါ အရှေ့မြောက်ကို အသုံးပြုထားသည်။</p><p>တစ်နာရီစီနည်းကို တိထိအစမှ စတင်၍ နောက်တိထိမစမီအထိ လှည့်တွက်သည်။ ၁၂ နှစ်နည်းတွင် ဇာတိအုပ်စုမှ စပြီး ပြည့်ပြီးသော အသက် ၁၂ နှစ်တိုင်း တစ်အုပ်စုစီ ရွှေ့သည်။</p></details>
+</div>
+<section id="result" class="panel result" aria-label="တွက်ချက်ရလဒ်" aria-live="polite"></section>
+</section>
+<section id="tables" class="panel"><h2>ကျမ်းကိုးဇယား</h2>
+<details open><summary>တိထိအုပ်စု ၅ စု</summary><div id="group-table"></div></details>
+<details><summary>တိထိအမည်နှင့် အုပ်စု</summary><div id="number-table"></div></details>
+<details><summary>တိထိနှင့် ယုဂ် စည်းမျဉ်းများ</summary><div id="yug-table"></div></details>
+</section>
+<section id="reader" class="panel">
+<h2>မူရင်းစာမျက်နှာများ</h2>
+<div class="chapters" id="chapters"></div>
+<div class="reader-controls"><button id="prev" type="button">ရှေ့စာမျက်နှာ</button><label>စာမျက်နှာ<select id="page"></select></label><button id="next" type="button">နောက်စာမျက်နှာ</button></div>
+<a id="scan-link" target="_blank" rel="noopener" aria-label="မူရင်းပုံ အရွယ်အစားအပြည့်ဖွင့်ရန်"><img id="scan" alt="" loading="lazy"></a>
+</section>
+</main>
+<script type="module" src="./app.mjs"></script>
+</body>
+</html>
