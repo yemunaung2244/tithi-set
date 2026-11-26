@@ -3,6 +3,7 @@ import {MoonPhase, SearchMoonPhase} from './vendor/astronomy-engine.mjs';
 export const MINUTE = 60000;
 export const TWELVE_MIN = 12 * MINUTE;
 export const HOUR = 3600000;
+export const DAY = 24 * HOUR;
 export const OFFSET = 6.5 * HOUR;
 export const mm = value => String(value).replace(/[0-9]/g, digit => '၀၁၂၃၄၅၆၇၈၉'[digit]);
 export const groups = [
@@ -39,6 +40,42 @@ export const tithiRemedies = [
   {number:13, label:'တိထီ ၁၃ လုံး', arrangement:'ကြံသကာ / ထန်းလျက်', yadaya:'ဘာလီစေ့ကြော်', benefit:'ခွန်အားကောင်းတယ်', deity:'Kamdev'},
   {number:14, label:'တိထီ ၁၄ လုံး', arrangement:'ကုံကုမံ', yadaya:'အသီး', benefit:'ပညာတိုးတယ်။', deity:'ကာလီမယ်တော်'},
   {number:15, label:'လပြည့်တိထီ', arrangement:'ပဲဝါ', yadaya:'ပိန္နဲသီး', benefit:'မျက်စိရောဂါကင်းသည်။', deity:'လမင်းကြီး'}
+];
+export const specialTithiRules = [
+  {
+    key:'thousandfold',
+    name:'ကောင်းမှုအကျိုး ထောင်ချီတိထီ',
+    short:'ကောင်းမှု ထောင်ချီ',
+    note:'မည့်သည့် ကောင်းမှုကို လုပ်သည်ဖြစ်စေ အကျိုးကျေးဇူးကို အဆပေါင်း ထောင်ချီ ပိုလွန်၍ ရသည်။',
+    match:(weekday, group, number) =>
+      (weekday === 1 && number === 0) ||
+      (weekday === 0 && number === 7) ||
+      (weekday === 2 && number === 4) ||
+      (weekday === 3 && number === 8)
+  },
+  {
+    key:'kuber',
+    name:'Kuber / Ratnakar Tithi',
+    short:'Kuber / Ratnakar',
+    note:'တနင်္ဂနွေ·စနေ (ဇေယျာ)၊ တနင်္လာ (နန္ဒာ)၊ အင်္ဂါ (ရိတ္တာ)၊ ဗုဒ္ဓဟူး·သောကြာ (ပုဏ္ဏာ/လကွယ်)၊ ကြာသပတေး (ဘဒြာ)',
+    match:(weekday, group) =>
+      ((weekday === 0 || weekday === 6) && group === 2) ||
+      (weekday === 1 && group === 0) ||
+      (weekday === 2 && group === 3) ||
+      ((weekday === 3 || weekday === 5) && group === 4) ||
+      (weekday === 4 && group === 1)
+  },
+  {
+    key:'akkhara',
+    name:'အက္ခရာတိထီ',
+    short:'အက္ခရာတိထီ',
+    note:'တနင်္ဂနွေ (တိထီ ၇ လုံး)၊ တနင်္လာ (လကွယ်တိထီ)၊ အင်္ဂါ (တိထီ ၄ လုံး)၊ ကြာသပတေး (တိထီ ၈ လုံး)',
+    match:(weekday, group, number) =>
+      (weekday === 0 && number === 7) ||
+      (weekday === 1 && number === 0) ||
+      (weekday === 2 && number === 4) ||
+      (weekday === 4 && number === 8)
+  }
 ];
 export const yugRules = [
   {name:'သိဒ္ဓိယုဂ်', en:'Siddhi', page:41, groups:[[],[],[2],[1],[4],[0],[3]]},
@@ -88,12 +125,14 @@ export function readTithi(ms) {
   const twelveMin = Math.max(0, Math.floor((ms - start) / TWELVE_MIN));
   const hourlyFull = start + (hour + 1) * HOUR <= end;
   const twelveMinFull = start + (twelveMin + 1) * TWELVE_MIN <= end;
+  const specialTithis = specialTithiRules.filter(rule => rule.match(weekday, group, number));
   return {
     index, number, group, weekday, start, end, angle,
     hour, hourlyGroup: (group + hour) % 5, hourlyFull,
     twelveMin, twelveMinGroup: (group + twelveMin) % 5, twelveMinFull,
     waxing: index < 15,
     remedy: tithiRemedies[number],
+    specialTithis,
     yugs: yugRules.filter(rule => rule.groups?.[weekday].includes(group) || rule.numbers?.[weekday] === number)
   };
 }
@@ -206,4 +245,43 @@ export function buildTwelveYearSchedule(bornMs, targetMs, periods = 10) {
     });
   }
   return {natal, age, activeIndex, rows};
+}
+
+export function findUpcomingSpecialTithis(fromMs, daysAhead = 180) {
+  const limitMs = fromMs + daysAhead * DAY;
+  const rows = [];
+  const startAngle = MoonPhase(new Date(fromMs));
+  let index = Math.floor(startAngle / 12);
+  let start = phaseBoundary(index, fromMs, false);
+  while (start < limitMs) {
+    const nextIndex = (index + 1) % 30;
+    const end = phaseBoundary(nextIndex, start + 60000, true);
+    const number = (index + 1) % 15 || (index === 29 ? 0 : 15);
+    const groupIndex = groupOf(number);
+    const firstDayLocal = Math.floor((start + OFFSET) / DAY) * DAY - OFFSET;
+    for (let dayStart = firstDayLocal; dayStart < end; dayStart += DAY) {
+      const dayEnd = dayStart + DAY;
+      const overlapStart = Math.max(start, dayStart);
+      const overlapEnd = Math.min(end, dayEnd);
+      if (overlapEnd <= overlapStart || overlapEnd <= fromMs) continue;
+      const weekday = new Date(dayStart + OFFSET).getUTCDay();
+      const matched = specialTithiRules.filter(rule => rule.match(weekday, groupIndex, number));
+      if (matched.length) {
+        rows.push({
+          start: overlapStart,
+          end: overlapEnd,
+          weekday,
+          tithiIndex: index,
+          tithiText: tithiLabel(index),
+          group: groups[groupIndex],
+          matched,
+          keys: matched.map(r => r.key),
+          active: fromMs >= overlapStart && fromMs < overlapEnd
+        });
+      }
+    }
+    index = nextIndex;
+    start = end;
+  }
+  return rows;
 }

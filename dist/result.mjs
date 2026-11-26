@@ -2,7 +2,8 @@ import {litFraction, showMoon} from './moon.mjs';
 import {inputKey, savedInput, validateInput} from './calculation-input.mjs';
 import {
   HOUR, TWELVE_MIN, OFFSET, mm, groups, groupOf, days, names, directionStages, tithiLabel, tithiRemedies,
-  readTithi, completedYears, buildHourlySchedule, buildTwelveMinSchedule, buildTwelveYearSchedule
+  specialTithiRules, readTithi, completedYears,
+  buildHourlySchedule, buildTwelveMinSchedule, buildTwelveYearSchedule, findUpcomingSpecialTithis
 } from './engine.mjs';
 import {table} from './table.mjs';
 
@@ -47,6 +48,16 @@ function renderRemedyCard(title, tithiText, remedy) {
         <div class="remedy-benefit"><dt>အကျိုးကျေးဇူး</dt><dd>${remedy.benefit}</dd></div>
       </dl>
     </div>`;
+}
+
+function renderSpecialCard(specialTithis) {
+  if (!specialTithis.length) return '';
+  const items = specialTithis.map(rule => `
+    <div class="special-hit special-${rule.key}">
+      <strong>${rule.name}</strong>
+      <p>${rule.note}</p>
+    </div>`).join('');
+  return `<div class="mini special-card"><h3>တိုက်ဆိုင်သော အထူးတိထီ</h3><div class="special-list">${items}</div></div>`;
 }
 
 function renderRemainderNote(rem, unitLabel) {
@@ -127,6 +138,37 @@ function renderTwelveYearTab(born, ms) {
     ${scheduleTable(['သက်တမ်း', 'ရက်စွဲကာလ', 'တိထိ နှင့် အရောင်', 'ဗာလ', 'ကုမာရ', 'ယုဝ', 'ဝုဒ္ဓ', 'မတ'], rows)}`;
 }
 
+function renderSpecialTab(upcoming, filterKey) {
+  const filtered = filterKey === 'all' ? upcoming : upcoming.filter(r => r.keys.includes(filterKey));
+  const activeRule = specialTithiRules.find(r => r.key === filterKey);
+  const noteText = activeRule
+    ? `${activeRule.name} — ${activeRule.note}`
+    : `စစ်ဆေးချိန်မှစ၍ လာမည့် ရက် ၁၈၀ အတွင်း ကျရောက်မည့် အထူးတိထီများ (${mm(upcoming.length)} ကြိမ်)`;
+  const rowsHtml = filtered.map(r => {
+    const badges = r.matched.map(m => `<span class="special-chip special-${m.key}">${m.short}</span>`).join(' ');
+    return `<tr${r.active ? ' class="active-row"' : ''}>
+      <td><strong>${fmtDate(r.start)}</strong> (${days[r.weekday]})${r.active ? ' <span class="badge">လက်ရှိ</span>' : ''}</td>
+      <td>${fmtTime(r.start)} – ${fmtTime(r.end)}</td>
+      <td>${tithiCell(r)}</td>
+      <td><div class="chip-wrap">${badges}</div></td>
+    </tr>`;
+  }).join('');
+  return `
+    <div class="subbar">
+      <p class="basis">${noteText}</p>
+      <div class="seg seg-wrap" role="group" aria-label="အထူးတိထီ အမျိုးအစား">
+        <button type="button" data-special-filter="all" class="${filterKey === 'all' ? 'is-on' : ''}">အားလုံး (${mm(upcoming.length)})</button>
+        ${specialTithiRules.map(r => {
+          const count = upcoming.filter(u => u.keys.includes(r.key)).length;
+          return `<button type="button" data-special-filter="${r.key}" class="${filterKey === r.key ? 'is-on' : ''}">${r.short} (${mm(count)})</button>`;
+        }).join('')}
+      </div>
+    </div>
+    ${filtered.length
+      ? `<div class="table-wrap schedule-wrap"><table class="schedule-table remedy-table"><thead><tr><th scope="col">ရက်စွဲနှင့် နေ့</th><th scope="col">အချိန်ကာလ</th><th scope="col">တိထိ နှင့် အရောင်</th><th scope="col">အထူးတိထီ</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>`
+      : '<p class="basis">ရွေးချယ်ထားသော ကာလအတွင်း တိုက်ဆိုင်မှု မတွေ့ပါ။</p>'}`;
+}
+
 function renderRemedyTab(currentNumber) {
   const ordered = [...tithiRemedies.slice(1), tithiRemedies[0]];
   const rows = ordered.map(item => {
@@ -194,6 +236,8 @@ function calculate() {
     const directions = directionStages(base);
     const hourlySchedule = buildHourlySchedule(t, ms);
     const twelveMinSchedule = buildTwelveMinSchedule(t, ms);
+    let upcomingSpecial = null;
+    let specialFilter = 'all';
     let activeTab = (method === 'age' || method === 'birth') ? 'twelveYear'
       : method === 'twelveMin' ? 'twelveMin'
       : 'hourly';
@@ -218,6 +262,7 @@ function calculate() {
       ${unusedNotice ? `<p class="remainder-note is-active">${unusedNotice}</p>` : ''}
       ${table(['အဝတ္ထာန်', 'တိထိအုပ်စု / အရောင်', 'အရပ်', 'အကျိုးပေး'], directions.map(r => [r.stage, colorPill(r.group), r.group.direction, r.note]))}
       <div class="mini"><h3>တိုက်ဆိုင်သော ယုဂ်</h3><p>${t.yugs.map(y => y.name).join(' · ') || 'မရှိပါ။'}</p></div>
+      ${renderSpecialCard(t.specialTithis)}
       ${renderRemedyCard('ရောက်ဆဲ တိထီ ယတြာနှင့် အစီအရင်', tithiLabel(t.index), t.remedy)}
       ${natalRemedyHtml}
       <section class="schedules" aria-label="အသင့်တွက်ပြီးသား တိထီပိုင်းဇယားများ">
@@ -226,6 +271,7 @@ function calculate() {
           <button type="button" role="tab" data-tab="hourly" aria-selected="${activeTab === 'hourly'}">၁ နာရီပိုင်း (${mm(hourlySchedule.rows.length)})</button>
           <button type="button" role="tab" data-tab="twelveMin" aria-selected="${activeTab === 'twelveMin'}">၁၂ မိနစ်ပိုင်း (${mm(twelveMinSchedule.rows.length)})</button>
           <button type="button" role="tab" data-tab="twelveYear" aria-selected="${activeTab === 'twelveYear'}">၁၂ နှစ်ပိုင်း</button>
+          <button type="button" role="tab" data-tab="special" aria-selected="${activeTab === 'special'}">အထူးတိထီများ</button>
           <button type="button" role="tab" data-tab="remedy" aria-selected="${activeTab === 'remedy'}">တိထီ ယတြာဇယား (၁၆)</button>
         </div>
         <div id="schedule-panel" class="schedule-panel" role="tabpanel"></div>
@@ -246,6 +292,15 @@ function calculate() {
         panel.querySelectorAll('[data-min-scope]').forEach(btn => {
           btn.addEventListener('click', () => {
             showAllTwelveMin = btn.dataset.minScope === 'all';
+            paintTab();
+          });
+        });
+      } else if (activeTab === 'special') {
+        upcomingSpecial ??= findUpcomingSpecialTithis(ms, 180);
+        panel.innerHTML = renderSpecialTab(upcomingSpecial, specialFilter);
+        panel.querySelectorAll('[data-special-filter]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            specialFilter = btn.dataset.specialFilter;
             paintTab();
           });
         });
