@@ -114,6 +114,14 @@ export const specialTithiRules = [
       (weekday === 1 && number === 0) ||
       (weekday === 2 && number === 4) ||
       (weekday === 4 && number === 8)
+  },
+  {
+    key:'chandi',
+    name:'စန္ဒီမယ်တော် ပူဇော်ရန်နေ့',
+    short:'စန္ဒီမယ်တော်',
+    note:'စန္ဒီမယ်တော်ကို ပူဇော်ပါ · လပြည့်ကျော် တိထိ ၈ လုံး သို့မဟုတ် ၁၄ လုံး (အင်္ဂါနေ့ / စနေနေ့) တွင် စန္ဒီမယ်တော်ကို ပူဇော်ရင် အင်မတန် ကောင်းမြတ်သော အကျိုးကို ရပါသည်။',
+    match:(weekday, group, number, index) =>
+      (weekday === 2 || weekday === 6) && (index === 22 || index === 28)
   }
 ];
 export const yugRules = [
@@ -164,7 +172,7 @@ export function readTithi(ms) {
   const twelveMin = Math.max(0, Math.floor((ms - start) / TWELVE_MIN));
   const hourlyFull = start + (hour + 1) * HOUR <= end;
   const twelveMinFull = start + (twelveMin + 1) * TWELVE_MIN <= end;
-  const specialTithis = specialTithiRules.filter(rule => rule.match(weekday, group, number));
+  const specialTithis = specialTithiRules.filter(rule => rule.match(weekday, group, number, index));
   return {
     index, number, group, weekday, start, end, angle,
     hour, hourlyGroup: (group + hour) % 5, hourlyFull,
@@ -305,7 +313,7 @@ export function findUpcomingSpecialTithis(fromMs, daysAhead = 180) {
       const overlapEnd = Math.min(end, dayEnd);
       if (overlapEnd <= overlapStart || overlapEnd <= fromMs) continue;
       const weekday = new Date(dayStart + OFFSET).getUTCDay();
-      const matched = specialTithiRules.filter(rule => rule.match(weekday, groupIndex, number));
+      const matched = specialTithiRules.filter(rule => rule.match(weekday, groupIndex, number, index));
       if (matched.length) {
         rows.push({
           start: overlapStart,
