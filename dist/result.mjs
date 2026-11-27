@@ -1,11 +1,11 @@
-import {litFraction, showMoon} from './moon.mjs?v=20261127';
-import {inputKey, savedInput, validateInput} from './calculation-input.mjs?v=20261127';
+import {litFraction, showMoon} from './moon.mjs?v=20261127b';
+import {inputKey, savedInput, validateInput} from './calculation-input.mjs?v=20261127b';
 import {
   HOUR, TWELVE_MIN, OFFSET, mm, groups, groupOf, days, names, directionStages, tithiLabel, tithiRemedies,
   garmentTithiEffects, specialTithiRules, readTithi, completedYears,
   buildHourlySchedule, buildTwelveMinSchedule, buildTwelveYearSchedule, findUpcomingSpecialTithis
-} from './engine.mjs?v=20261127';
-import {table} from './table.mjs?v=20261127';
+} from './engine.mjs?v=20261127b';
+import {table} from './table.mjs?v=20261127b';
 
 const byId = id => document.getElementById(id);
 const isoMM = ms => new Date(ms + OFFSET).toISOString();
@@ -43,9 +43,10 @@ function renderRemedyCard(title, tithiText, remedy) {
     <div class="mini remedy-card">
       <h3>${title} · ${tithiText}${deityTag}</h3>
       <dl class="remedy-grid">
+        <div class="remedy-benefit"><dt>တိထီလုံးရေအလိုက် အကျိုးအပြစ် (သဘာဝ)</dt><dd>${remedy.nature}</dd></div>
         <div><dt>တိထီ အစီအရင်</dt><dd>${remedy.arrangement}</dd></div>
         <div><dt>တိထီ ယတြာ</dt><dd>${remedy.yadaya}</dd></div>
-        <div class="remedy-benefit"><dt>အကျိုးကျေးဇူး</dt><dd>${remedy.benefit}</dd></div>
+        <div class="remedy-benefit"><dt>ယတြာ အကျိုးကျေးဇူး</dt><dd>${remedy.benefit}</dd></div>
       </dl>
     </div>`;
 }
@@ -53,11 +54,12 @@ function renderRemedyCard(title, tithiText, remedy) {
 function renderSpecialCard(specialTithis) {
   if (!specialTithis.length) return '';
   const items = specialTithis.map(rule => {
+    const note = rule.note ? `<p>${rule.note}</p>` : '';
     const extra = rule.details ? `<div class="special-details">${rule.details.map(p => `<p>${p}</p>`).join('')}</div>` : '';
     return `
     <div class="special-hit special-${rule.key}">
       <strong>${rule.name}</strong>
-      <p>${rule.note}</p>
+      ${note}
       ${extra}
     </div>`;
   }).join('');
@@ -146,7 +148,7 @@ function renderSpecialTab(upcoming, filterKey) {
   const filtered = filterKey === 'all' ? upcoming : upcoming.filter(r => r.keys.includes(filterKey));
   const activeRule = specialTithiRules.find(r => r.key === filterKey);
   const noteText = activeRule
-    ? `${activeRule.name} — ${activeRule.note}`
+    ? (activeRule.note ? `${activeRule.name} — ${activeRule.note}` : activeRule.name)
     : `စစ်ဆေးချိန်မှစ၍ လာမည့် ရက် ၁၈၀ အတွင်း ကျရောက်မည့် အထူးတိထီများ (${mm(upcoming.length)} ကြိမ်)`;
   const detailBox = activeRule?.details
     ? `<div class="special-hit special-${activeRule.key} special-box"><strong>${activeRule.name}</strong><div class="special-details">${activeRule.details.map(p => `<p>${p}</p>`).join('')}</div></div>`
@@ -200,6 +202,7 @@ function renderRemedyTab(currentNumber) {
       active,
       cells: [
         `<div class="tithi-cell"><strong>${item.label}${active ? ' <span class="badge">လက်ရှိ</span>' : ''}</strong>${colorPill(g)}</div>`,
+        item.nature,
         item.arrangement,
         item.yadaya,
         item.benefit,
@@ -208,8 +211,8 @@ function renderRemedyTab(currentNumber) {
     };
   });
   return `
-    <p class="basis">တိထီ ၁ လုံးမှ ၁၄ လုံး၊ လပြည့်တိထီနှင့် လကွယ်တိထီအတွက် အစီအရင်၊ ယတြာနှင့် အကျိုးကျေးဇူးများ</p>
-    <div class="table-wrap schedule-wrap"><table class="schedule-table remedy-table"><thead><tr><th scope="col">တိထီ</th><th scope="col">တိထီ အစီအရင်</th><th scope="col">တိထီ ယတြာ</th><th scope="col">အကျိုးကျေးဇူး</th><th scope="col">အုပ်စိုး</th></tr></thead><tbody>${rows.map(r => `<tr${r.active ? ' class="active-row"' : ''}>${r.cells.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    <p class="basis">တိထီ ၁ လုံးမှ ၁၄ လုံး၊ လပြည့်တိထီနှင့် လကွယ်တိထီအတွက် တိထီအကျိုးအပြစ်၊ အစီအရင်၊ ယတြာနှင့် အကျိုးကျေးဇူးများ</p>
+    <div class="table-wrap schedule-wrap"><table class="schedule-table remedy-table"><thead><tr><th scope="col">တိထီ</th><th scope="col">တိထီ အကျိုးအပြစ်</th><th scope="col">တိထီ အစီအရင်</th><th scope="col">တိထီ ယတြာ</th><th scope="col">ယတြာ အကျိုးကျေးဇူး</th><th scope="col">အုပ်စိုး</th></tr></thead><tbody>${rows.map(r => `<tr${r.active ? ' class="active-row"' : ''}>${r.cells.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
 
 function calculate() {
@@ -296,7 +299,7 @@ function calculate() {
           <button type="button" role="tab" data-tab="twelveYear" aria-selected="${activeTab === 'twelveYear'}">၁၂ နှစ်ပိုင်း</button>
           <button type="button" role="tab" data-tab="special" aria-selected="${activeTab === 'special'}">အထူးတိထီများ</button>
           <button type="button" role="tab" data-tab="garment" aria-selected="${activeTab === 'garment'}">အဝတ်ချုပ် တိထီ (၃၀)</button>
-          <button type="button" role="tab" data-tab="remedy" aria-selected="${activeTab === 'remedy'}">တိထီ ယတြာဇယား (၁၆)</button>
+          <button type="button" role="tab" data-tab="remedy" aria-selected="${activeTab === 'remedy'}">တိထီ အကျိုးအပြစ်နှင့် ယတြာ (၁၆)</button>
         </div>
         <div id="schedule-panel" class="schedule-panel" role="tabpanel"></div>
       </section>`;
